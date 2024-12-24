@@ -59,7 +59,7 @@
             display: flex;
             justify-content: space-between;
             gap: 20px;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            flex-wrap: wrap;
         }
 
         .column {
@@ -68,17 +68,16 @@
             box-sizing: border-box;
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
             .columns {
-                flex-direction: column; /* Stack columns on smaller screens */
+                flex-direction: column;
                 gap: 15px;
             }
         }
 
         @media (max-width: 480px) {
             .button {
-                width: 100%; /* Make the button full-width on smaller devices */
+                width: 100%;
                 padding: 12px;
                 font-size: 18px;
             }
@@ -90,48 +89,39 @@
         <h1>Portfolio Calculator</h1>
 
         <div class="columns">
-            <!-- Nifty 50 Section -->
             <div class="column">
                 <h2>Nifty 50</h2>
-
                 <div class="input-group">
                     <label for="prevNifty50Nav">Previous Nifty 50 NAV (Optional):</label>
-                    <input type="number" id="prevNifty50Nav" step="0.01">
+                    <input type="number" id="prevNifty50Nav" step="0.01" onchange="saveValues()">
                 </div>
-
                 <div class="input-group">
                     <label for="changeNifty50">Change in Nifty 50 Value (%) (Optional):</label>
-                    <input type="number" id="changeNifty50" step="0.01">
+                    <input type="number" id="changeNifty50" step="0.01" onchange="saveValues()">
                 </div>
-
                 <div class="input-group">
                     <label for="nifty50Units">Nifty 50 Units (Editable, Default: 5.863):</label>
-                    <input type="number" id="nifty50Units" step="0.001">
+                    <input type="number" id="nifty50Units" step="0.001" onchange="saveValues()">
                 </div>
             </div>
 
-            <!-- Nifty Next 50 Section -->
             <div class="column">
                 <h2>Nifty Next 50</h2>
-
                 <div class="input-group">
                     <label for="prevNiftyNext50Nav">Previous Nifty Next 50 NAV (Optional):</label>
-                    <input type="number" id="prevNiftyNext50Nav" step="0.01">
+                    <input type="number" id="prevNiftyNext50Nav" step="0.01" onchange="saveValues()">
                 </div>
-
                 <div class="input-group">
                     <label for="changeNiftyNext50">Change in Nifty Next 50 Value (%) (Optional):</label>
-                    <input type="number" id="changeNiftyNext50" step="0.01">
+                    <input type="number" id="changeNiftyNext50" step="0.01" onchange="saveValues()">
                 </div>
-
                 <div class="input-group">
                     <label for="niftyNext50Units">Nifty Next 50 Units (Editable, Default: 14.988):</label>
-                    <input type="number" id="niftyNext50Units" step="0.001">
+                    <input type="number" id="niftyNext50Units" step="0.001" onchange="saveValues()">
                 </div>
             </div>
         </div>
 
-        <!-- Total Investment Section -->
         <div class="input-group">
             <label for="totalInvestment">Total Investment (Default: 1000):</label>
             <input type="number" id="totalInvestment" step="0.01" onchange="updateUnits()">
@@ -143,22 +133,24 @@
     </div>
 
     <script>
-        // Load values from localStorage or use defaults
         function loadValues() {
             document.getElementById('totalInvestment').value = localStorage.getItem('totalInvestment') || 1000;
             document.getElementById('nifty50Units').value = localStorage.getItem('nifty50Units') || 5.863;
             document.getElementById('niftyNext50Units').value = localStorage.getItem('niftyNext50Units') || 14.988;
+            document.getElementById('prevNifty50Nav').value = localStorage.getItem('prevNifty50Nav') || '';
+            document.getElementById('changeNifty50').value = localStorage.getItem('changeNifty50') || '';
+            document.getElementById('prevNiftyNext50Nav').value = localStorage.getItem('prevNiftyNext50Nav') || '';
+            document.getElementById('changeNiftyNext50').value = localStorage.getItem('changeNiftyNext50') || '';
         }
 
-        // Save updated values to localStorage
         function saveValues() {
-            const totalInvestment = parseFloat(document.getElementById('totalInvestment').value) || 1000;
-            const nifty50Units = parseFloat(document.getElementById('nifty50Units').value) || 5.863;
-            const niftyNext50Units = parseFloat(document.getElementById('niftyNext50Units').value) || 14.988;
-
-            localStorage.setItem('totalInvestment', totalInvestment);
-            localStorage.setItem('nifty50Units', nifty50Units);
-            localStorage.setItem('niftyNext50Units', niftyNext50Units);
+            localStorage.setItem('totalInvestment', document.getElementById('totalInvestment').value);
+            localStorage.setItem('nifty50Units', document.getElementById('nifty50Units').value);
+            localStorage.setItem('niftyNext50Units', document.getElementById('niftyNext50Units').value);
+            localStorage.setItem('prevNifty50Nav', document.getElementById('prevNifty50Nav').value);
+            localStorage.setItem('changeNifty50', document.getElementById('changeNifty50').value);
+            localStorage.setItem('prevNiftyNext50Nav', document.getElementById('prevNiftyNext50Nav').value);
+            localStorage.setItem('changeNiftyNext50', document.getElementById('changeNiftyNext50').value);
         }
 
         function updateUnits() {
@@ -168,12 +160,13 @@
             const nifty50Units = parseFloat(document.getElementById('nifty50Units').value) || 5.863;
             const niftyNext50Units = parseFloat(document.getElementById('niftyNext50Units').value) || 14.988;
 
-            // Calculate new units based on the ratio of new investment to old investment
             const newNifty50Units = (totalInvestment / oldInvestment) * nifty50Units;
             const newNiftyNext50Units = (totalInvestment / oldInvestment) * niftyNext50Units;
 
             document.getElementById('nifty50Units').value = newNifty50Units.toFixed(3);
             document.getElementById('niftyNext50Units').value = newNiftyNext50Units.toFixed(3);
+
+            saveValues();
         }
 
         function calculatePortfolio() {
@@ -187,50 +180,37 @@
             const niftyNext50Units = parseFloat(document.getElementById('niftyNext50Units').value) || 14.988;
 
             const calculateCurrentValue = (prevNav, changePercent, units) => {
-                if (prevNav <= 0 || units <= 0) {
-                    return 0;
-                }
-                if (changePercent < -100 || changePercent > 100) {
-                    return 0;
-                }
+                if (prevNav <= 0 || units <= 0) return 0;
+                if (changePercent < -100 || changePercent > 100) return 0;
                 const currentNav = prevNav * ((100 + changePercent) / 100);
                 return currentNav * units;
             };
 
             const displayProfitOrLoss = (investment, currentValue) => {
-                if (currentValue > investment) {
-                    return `Profit: ${(currentValue - investment).toFixed(2)}`;
-                } else {
-                    return `Loss: ${(investment - currentValue).toFixed(2)}`;
-                }
+                return currentValue > investment
+                    ? `Profit: ${(currentValue - investment).toFixed(2)}`
+                    : `Loss: ${(investment - currentValue).toFixed(2)}`;
             };
 
             const currentNifty50Value = calculateCurrentValue(prevNifty50Nav, changeNifty50, nifty50Units);
             const currentNiftyNext50Value = calculateCurrentValue(prevNiftyNext50Nav, changeNiftyNext50, niftyNext50Units);
-
             const totalPortfolioValue = currentNifty50Value + currentNiftyNext50Value;
 
             const result = `
                 <h3>Results:</h3>
-                ${prevNifty50Nav > 0 ? `<p>Total Nifty 50 Investment: ${totalInvestment.toFixed(2)}</p>
-                <p>Current Nifty 50 Value: ${currentNifty50Value.toFixed(2)}</p>
-                <p>${displayProfitOrLoss(totalInvestment, currentNifty50Value)}</p>` : ''}
-
-                ${prevNiftyNext50Nav > 0 ? `<p>Total Nifty Next 50 Investment: ${totalInvestment.toFixed(2)}</p>
-                <p>Current Nifty Next 50 Value: ${currentNiftyNext50Value.toFixed(2)}</p>
-                <p>${displayProfitOrLoss(totalInvestment, currentNiftyNext50Value)}</p>` : ''}
-
+                ${prevNifty50Nav > 0 ? `
+                    <p>Current Nifty 50 Value: ${currentNifty50Value.toFixed(2)}</p>
+                    <p>${displayProfitOrLoss(totalInvestment, currentNifty50Value)}</p>` : ''}
+                ${prevNiftyNext50Nav > 0 ? `
+                    <p>Current Nifty Next 50 Value: ${currentNiftyNext50Value.toFixed(2)}</p>
+                    <p>${displayProfitOrLoss(totalInvestment, currentNiftyNext50Value)}</p>` : ''}
                 <p><strong>Total Portfolio Value: ${totalPortfolioValue.toFixed(2)}</strong></p>
             `;
 
             document.getElementById('result').innerHTML = result;
-
-            // Save updated values
-            saveValues();
         }
 
-        // Initialize the form with stored or default values
-        window.onload = loadValues;
+        loadValues();
     </script>
 </body>
 </html>
